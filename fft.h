@@ -27,7 +27,7 @@ namespace fourier{
 
     ///内嵌均一化函数，该函数就地运算，对原图取对数后压缩到0~1显示范围
     /// \param img 由fft计算出的复杂矩阵
-    void fftnormalize(cv::Mat& img);
+    void fftlognormalize(cv::Mat& img);
 
     ///就地产生理想低通滤波器
     /// \param ideallf 就地产生的图像,其必须指定类型为32FC1和目标尺寸
@@ -37,7 +37,16 @@ namespace fourier{
 
     /// 频域居中
     /// \param img
-    void fftshift(cv::Mat& img);
+    /// \return 返回一个img,方便嵌套调试
+    cv::Mat fftshift(cv::Mat& img);
+
+    ///magnitude of complex
+    /// \param img 使用fft计算得到的双通道复数矩阵
+    cv::Mat abs(const cv::Mat& img);
+
+    ///phase angle of complex
+    /// \param img 使用fft计算得到的双通道复数矩阵
+    cv::Mat angle(const cv::Mat& img);
 }
 
 #endif //LOWFILTER_FFT_H

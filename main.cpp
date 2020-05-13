@@ -11,6 +11,20 @@ int main() {
     fourier::fftshift(fftImori);
     fourier::fftdisplay(fftImori,"fftImori");
 
+  //  cv::imshow("ffshift",fourier::fftshift(fftImori));
+
+
+    cv::Mat ifftImori = fourier::idft(fourier::fftshift(fftImori));
+    fourier::fftdisplay(ifftImori,"ifftImori");
+
+    cv::Mat mag = fourier::abs(fftImori);
+    cv::Mat pha = fourier::angle(fftImori);
+    fourier::fftlognormalize(mag);
+    fourier::fftlognormalize(pha);
+    cv::imshow("magnitude",mag);
+    cv::imshow("phase angle",pha);
+   // cv::imshow("ifftImori",ifftImori);
+
 //    cv::Mat low(cv::Size(1000,1000),CV_32FC1);
 //    fourier::ideal_lowfilter(low,5);
 //    cv::imshow("low",low);

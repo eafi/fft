@@ -46,6 +46,7 @@ namespace fourier{
         cv::Mat inverseT;
         cv::Mat tempImg = img.clone();
         cv::dft(tempImg, inverseT, cv::DFT_INVERSE | cv::DFT_REAL_OUTPUT);
+        std::cout<<inverseT.channels()<<std::endl;
         return inverseT;
     }
 
@@ -60,27 +61,26 @@ namespace fourier{
             cv::Mat mag,pha;
             cv::magnitude(splitImg[0],splitImg[1],mag);
             cv::phase(splitImg[0],splitImg[1],pha);
-            fourier::fftnormalize(mag);
+            fourier::fftlognormalize(mag);
             cv::imshow(winname+",magnitude",mag);
-            fourier::fftnormalize(pha);
+            fourier::fftlognormalize(pha);
             cv::imshow(winname+",pha",pha);
         }else if(img.channels() == 1) //只有实部
         {
-            fourier::fftnormalize(cloneImg);
+            cv::normalize(cloneImg,cloneImg,0,1,cv::NORM_MINMAX); //映射到只在0~1范围
             cv::imshow(winname+",without phase angle",cloneImg);
         }
 
     }
 
-    void fftnormalize(cv::Mat &img)
+    void fftlognormalize(cv::Mat &img)
     {
         img += cv::Scalar::all(1);
-        cv::log(img,img);
-        img = img(cv::Rect(0, 0, img.cols & -2, img.rows & -2));
-        cv::normalize(img,img,0,1,cv::NORM_MINMAX);
+        cv::log(img,img);   //log(1+img)
+        cv::normalize(img,img,0,1,cv::NORM_MINMAX); //映射到只在0~1范围
     }
 
-    void fftshift(cv::Mat& img)
+    cv::Mat fftshift(cv::Mat& img)
     {
 
         int cx = img.cols/2;
@@ -96,6 +96,7 @@ namespace fourier{
         q1.copyTo(tmp);                    // swap quadrant (Top-Right with Bottom-Left)
         q2.copyTo(q1);
         tmp.copyTo(q2);
+        return img;
     }
 
     void ideal_lowfilter(cv::Mat &ideallf,unsigned int d)
@@ -118,6 +119,22 @@ namespace fourier{
                 }
             }
         }
+    }
+
+    cv::Mat abs(const cv::Mat& img)
+    {
+        cv::Mat splitImg[2];
+        cv::split(img,splitImg);
+        cv::magnitude(splitImg[0],splitImg[1],splitImg[0]);
+        return splitImg[0];
+    }
+
+    cv::Mat angle(const cv::Mat& img)
+    {
+        cv::Mat splitImg[2];
+        cv::split(img,splitImg);
+        cv::phase(splitImg[0],splitImg[1],splitImg[0]);
+        return splitImg[0];
     }
 
 }
