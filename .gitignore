@@ -1,8 +1,8 @@
 cmake-build-debug/
 
-.xml
-.iml
-.DS_Store
+*.xml
+*.iml
+*.DS_Store
 
 # Prerequisites
 *.d
