@@ -2,6 +2,7 @@
 该工程参照Matlab image processing toolbox，最大程度封装优化
 尽管目标是模拟Matlab，但也要指出与Matlab的一些不同：
 1. Matlab使用内建complex double保存复数，而OpenCV默认使用双通道Mat保存，分别存储实部和虚部
+2. Matlab使用*实现复数乘法，OpenCV使用命令实现复数乘法。特别的，对于FFT，OpenCV使用cv::mulSpectrums()
 
 # 函数概览
 ```cpp
@@ -78,6 +79,20 @@
     cv::imshow("phase angle",pha);
     //fourier::fftdisplay(mag,"magnitude");输出一样的结果
 ```
+
+## 4.创建理想低通滤波器并对图像进行低通滤波后显示
+```cpp
+    cv::Mat idellf(fftImori.size(),CV_32F); //必须强调低通滤波器的尺寸
+    fourier::ideal_lowfilter(idellf,30); //创建截止频率30的理想低通滤波器
+    //fourier::ideal_highfilter(idelhf,30);// 创建理想高通滤波器
+    cv::Mat mult;
+    cv::mulSpectrums(fftImori,idellf,mult,0); //OpenCV内建,fft结果与低通滤波器相乘,返回结果到mult
+    fourier::fftdisplay(mult,"mu"); //以频谱和相位角图显示滤波结果
+    cv::Mat ifftImori = fourier::idft(fourier::fftshift(mult)); //将结果由频率域向空间域转化
+    //从两倍尺寸向原始尺寸裁剪并显示
+    cv::imshow("filtering",ifftImori(cv::Rect(0,0,imori.cols,imori.rows)));
+```
+
 
 
 

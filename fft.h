@@ -31,9 +31,12 @@ namespace fourier{
 
     ///就地产生理想低通滤波器
     /// \param ideallf 就地产生的图像,其必须指定类型为32FC1和目标尺寸
-    /// \param d 指定低通滤波器截止频率
-    void ideal_lowfilter(cv::Mat &ideallf,unsigned int d);
-
+    /// \param cutoff 指定低通滤波器截止频率
+    void ideal_lowfilter(cv::Mat &ideallf,unsigned int cutoff);
+    ///就地产生理想高通滤波器
+    /// \param ideallf 就地产生的图像,其必须指定类型为32FC1和目标尺寸
+    /// \param cutoff 指定低通滤波器截止频率
+    void ideal_highfilter(cv::Mat &idealhf, unsigned int cutoff);
 
     /// 频域居中
     /// \param img
@@ -47,6 +50,7 @@ namespace fourier{
     ///phase angle of complex
     /// \param img 使用fft计算得到的双通道复数矩阵
     cv::Mat angle(const cv::Mat& img);
+
 }
 
 #endif //LOWFILTER_FFT_H

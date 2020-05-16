@@ -46,7 +46,7 @@ namespace fourier{
         cv::Mat inverseT;
         cv::Mat tempImg = img.clone();
         cv::dft(tempImg, inverseT, cv::DFT_INVERSE | cv::DFT_REAL_OUTPUT);
-        std::cout<<inverseT.channels()<<std::endl;
+        cv::normalize(inverseT,inverseT,0,1,cv::NORM_MINMAX); //映射到只在0~1范围
         return inverseT;
     }
 
@@ -65,10 +65,9 @@ namespace fourier{
             cv::imshow(winname+",magnitude",mag);
             fourier::fftlognormalize(pha);
             cv::imshow(winname+",pha",pha);
-        }else if(img.channels() == 1) //只有实部
+        }else//只有实部
         {
-            cv::normalize(cloneImg,cloneImg,0,1,cv::NORM_MINMAX); //映射到只在0~1范围
-            cv::imshow(winname+",without phase angle",cloneImg);
+            cv::imshow(winname,cloneImg);
         }
 
     }
@@ -99,25 +98,34 @@ namespace fourier{
         return img;
     }
 
-    void ideal_lowfilter(cv::Mat &ideallf,unsigned int d)
+    void ideal_lowfilter(cv::Mat &ideallf,unsigned int cutoff)
     {
-        ideallf.zeros(ideallf.size(),CV_32FC1);
-        //sub-rectangle of idealfw
-        cv::Rect2i middleRect(ideallf.size().width/2-d/2,ideallf.size().height/2-d/2,d,d);
-        cv::Mat subRect = ideallf(middleRect);
-        int radii = d/2;
-        d = std::pow(radii,2);
-        for(int i=0;i<subRect.rows;++i)
+        try
         {
-            for(int j=0;j<subRect.cols;++j)
+            if(ideallf.empty())
+                throw("filter to be created required a size and CV_32FC1 type");
+            ideallf.create(ideallf.size(),CV_32FC2);
+            ideallf = cv::Scalar::all(0.f);
+            //sub-rectangle of ideallfw
+            cv::Rect2i middleRect(ideallf.size().width/2-cutoff,ideallf.size().height/2-cutoff,2*cutoff,2*cutoff);
+            cv::Mat subRect = ideallf(middleRect);
+            int radii = cutoff;
+            cutoff = std::pow(radii,2);
+            for(int i=0;i<subRect.rows;++i)
             {
-                int sum = std::pow(radii-i,2)+std::pow(radii-j,2);
-                if(sum<(int)d)
+                for(int j=0;j<subRect.cols;++j)
                 {
-                    float* p = subRect.ptr<float>(i);
-                    p[j] = 1.0f;
+                    int sum = std::pow(radii-i,2)+std::pow(radii-j,2);
+                    if(sum<(int)cutoff)
+                    {
+                        float* p = subRect.ptr<float>(i);
+                        p[j*2] = 1.f;
+                    }
                 }
             }
+        }catch (const std::string& e)
+        {
+            std::cerr <<e<<std::endl;
         }
     }
 
@@ -137,6 +145,10 @@ namespace fourier{
         return splitImg[0];
     }
 
+    void ideal_highfilter(cv::Mat &idealhf, unsigned int cutoff)
+    {
+        ideal_lowfilter(idealhf,cutoff);
+        idealhf = 1 - idealhf;
+    }
 }
-
 

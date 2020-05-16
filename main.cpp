@@ -13,23 +13,14 @@ int main() {
 
   //  cv::imshow("ffshift",fourier::fftshift(fftImori));
 
-
-    cv::Mat ifftImori = fourier::idft(fourier::fftshift(fftImori));
-    fourier::fftdisplay(ifftImori,"ifftImori");
-
-    cv::Mat mag = fourier::abs(fftImori);
-    cv::Mat pha = fourier::angle(fftImori);
-    fourier::fftlognormalize(mag);
-    fourier::fftlognormalize(pha);
-    cv::imshow("magnitude",mag);
-    cv::imshow("phase angle",pha);
-   // cv::imshow("ifftImori",ifftImori);
-
-//    cv::Mat low(cv::Size(1000,1000),CV_32FC1);
-//    fourier::ideal_lowfilter(low,5);
-//    cv::imshow("low",low);
-
-
+    cv::Mat idellf(fftImori.size(),CV_32F); //必须强调低通滤波器的尺寸
+    fourier::ideal_lowfilter(idellf,30); //创建截止频率30的滤波器
+    cv::Mat mult;
+    cv::mulSpectrums(fftImori,idellf,mult,0); //OpenCV内建,fft结果与低通滤波器相乘,返回结果到mult
+    fourier::fftdisplay(mult,"mu"); //以频谱和相位角图显示滤波结果
+    cv::Mat ifftImori = fourier::idft(fourier::fftshift(mult)); //将结果由频率域向空间域转化
+    cv::imshow("filtering",ifftImori(cv::Rect(0,0,imori.cols,imori.rows)));
+    //从两倍尺寸向原始尺寸裁剪并显示
 
     cv::waitKey(0);
     return 0;
